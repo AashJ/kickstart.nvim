@@ -26,7 +26,7 @@ return {
         },
       }
     end,
-    vim.keymap.set('n', '<leader>e', ':Oil<CR>', { noremap = true, silent = true }),
+    vim.keymap.set('n', '<leader>o', ':Oil<CR>', { noremap = true, silent = true, desc = '[O]il' }),
     view_options = {
       show_hidden = true,
     },
