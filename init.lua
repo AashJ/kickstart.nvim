@@ -162,7 +162,7 @@ vim.opt.scrolloff = 10
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clear search highlights' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -177,13 +177,24 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
-vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
-vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
-vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
-vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>', { desc = 'Disabled - use h' })
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>', { desc = 'Disabled - use l' })
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>', { desc = 'Disabled - use k' })
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>', { desc = 'Disabled - use j' })
 
 -- Reload buffer
 vim.keymap.set('n', '<leader>r', ':e<CR>', { noremap = true, silent = true, desc = '[R]eload buffer' })
+
+-- Copy current file path
+vim.keymap.set('n', '<leader>cfp', function()
+  local filepath = vim.fn.expand('%:p')
+  if filepath == '' then
+    vim.notify('No file path to copy', vim.log.levels.WARN)
+    return
+  end
+  vim.fn.setreg('+', filepath)
+  vim.notify('Copied: ' .. filepath, vim.log.levels.INFO)
+end, { desc = '[C]opy [F]ile [P]ath' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -198,6 +209,15 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+-- [[ Create a new scratch buffer ]]
+vim.api.nvim_create_user_command('Scratch', function()
+  vim.cmd 'enew' -- Create a new buffer
+  vim.bo.buftype = 'nofile' -- Mark as a scratch buffer
+  vim.bo.bufhidden = 'hide' -- Keep in memory when hidden
+  vim.bo.swapfile = false -- Disable swap file
+  vim.bo.filetype = 'markdown' -- Set file type to Markdown
+end, {})
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -613,15 +633,16 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        ts_ls = {},
         pyright = {},
         eslint = {
           root_dir = lspconfig_util.find_git_ancestor,
           settings = {
+            validate = 'off',
             format = false,
             workingDirectory = {
               mode = 'location',
             },
+            codeActionOnSave = { enable = false, mode = 'all' },
           },
         },
         tailwindcss = {},
@@ -656,6 +677,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'ts_ls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
