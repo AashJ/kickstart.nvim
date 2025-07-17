@@ -164,6 +164,34 @@ vim.opt.scrolloff = 10
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clear search highlights' })
 
+-- [[ Configure Diagnostics ]]
+-- Configure diagnostic display to look like modern IDEs
+vim.diagnostic.config {
+  virtual_text = {
+    prefix = '●', -- Could be '■', '▎', 'x', '●'
+    spacing = 2,
+  },
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = '✘',
+      [vim.diagnostic.severity.WARN] = '▲',
+      [vim.diagnostic.severity.HINT] = '⚑',
+      [vim.diagnostic.severity.INFO] = '»',
+    },
+  },
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+  float = {
+    focusable = true,
+    style = 'minimal',
+    border = 'rounded',
+    source = true,
+    header = '',
+    prefix = '',
+  },
+}
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror message' })
@@ -187,7 +215,7 @@ vim.keymap.set('n', '<leader>r', ':e<CR>', { noremap = true, silent = true, desc
 
 -- Copy current file path
 vim.keymap.set('n', '<leader>cfp', function()
-  local filepath = vim.fn.expand('%:p')
+  local filepath = vim.fn.expand '%:p'
   if filepath == '' then
     vim.notify('No file path to copy', vim.log.levels.WARN)
     return
@@ -195,6 +223,10 @@ vim.keymap.set('n', '<leader>cfp', function()
   vim.fn.setreg('+', filepath)
   vim.notify('Copied: ' .. filepath, vim.log.levels.INFO)
 end, { desc = '[C]opy [F]ile [P]ath' })
+
+-- Easy window navigation with leader + arrow keys
+vim.keymap.set('n', '<leader><tab>', '<C-w>w', { desc = 'Cycle to next window' })
+vim.keymap.set('n', '<leader><s-tab>', '<C-w>W', { desc = 'Cycle to previous window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
